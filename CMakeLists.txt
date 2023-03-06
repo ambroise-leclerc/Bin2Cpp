@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 
 project("bin2cpp")
 set(BIN2CPP_VERSION 0.1.0)
@@ -29,3 +29,9 @@ CPMAddPackage("gh:jarro2783/cxxopts@3.1.0")
 
 add_executable(bin2cpp bin2cpp.cpp)
 target_link_libraries(bin2cpp PRIVATE project_options cxxopts::cxxopts)
+
+include(CTest)
+add_test(NAME FromSourceCodeHppFile_8bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 8) 
+add_test(NAME FromSourceCodeHppFile_16bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 16) 
+add_test(NAME FromSourceCodeHppFile_32bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 32) 
+add_test(NAME FromSourceCodeHppFile_64bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 64) 

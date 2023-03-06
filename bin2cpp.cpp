@@ -27,11 +27,11 @@ int main(int argc, char** argv) {
             if (result.count("input")) {
                 filesystem::path inputFile{result["input"].as<string>()};
                 SourceCode<ifstream, stringstream> code{inputFile, columns, bitWidth, inputFile.stem().string()};
-                code.selftest();
+                return code.selftest();
             }
             else {
                 SourceCode<stringstream, stringstream> code{columns, bitWidth, "Test"};
-                code.selftest();
+                return code.selftest();
             }
         }
 
@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
     }
     catch (const exception& e) {
         cerr << "Error : " << e.what() << "\n";
+        return -1;
     }
 
     return 0;
