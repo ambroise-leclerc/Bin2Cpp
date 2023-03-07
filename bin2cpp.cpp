@@ -42,14 +42,14 @@ int main(int argc, char** argv) {
             else
                 outputFile = filesystem::path(inputFile).replace_extension("hpp");
 
-        SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
-        code.generate();
+            SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
+            code.generate();
+        }
     }
-}
-catch (const exception& e) {
-    cerr << "Error : " << e.what() << "\n";
-    return -1;
-}
+    catch (const exception& e) {
+        cerr << "Error : " << e.what() << "\n";
+        return -1;
+    }
 
-return 0;
+    return 0;
 }

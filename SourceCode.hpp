@@ -8,11 +8,11 @@
 #include <vector>
 #include <version>
 
-#if __has_include(<format>)
-#include <format>
-#else
+#if __has_include(<fmt/core.h>)
 #include <fmt/core.h>
-using namespace fmt;
+using fmt::format;
+#else
+#include <format>
 #endif
 
 template<typename InputStream, typename OutputStream>
@@ -54,10 +54,9 @@ public:
         dst << "    static constexpr std::array<" << valueType << "> data {\n    ";
         dst << std::hex << std::setfill('0');
         while (src) {
-            char c;
-            src.get(c);
-            if (src) {
-                outValue = (outValue << 8) + static_cast<uint8_t>(c);
+            auto byte = static_cast<uint8_t>(src.get());
+            if (!src.eof()) {
+                outValue = (outValue << 8) + byte;
                 bytesRead++;
                 if (bytesRead % bytesPerValue == 0) {
                     columns += sepWidth + bytesPerValue * 2;
@@ -71,8 +70,8 @@ public:
                 }
             }
         }
-        auto paddingBytes = bytesRead % bytesPerValue;
-        if (paddingBytes > 0) dst << ", 0x" << std::setw(bytesPerValue * 2) << (outValue << 8 * paddingBytes);
+        auto paddingBits = ((bytesPerValue - (bytesRead % bytesPerValue)) % bytesPerValue) * 8;
+        if (paddingBits > 0) dst << ", 0x" << std::setw(bytesPerValue * 2) << (outValue << paddingBits);
         dst << "\n    };\n    constexpr size_t data_size{" << std::dec << bytesRead << "};\n";
     }
 
