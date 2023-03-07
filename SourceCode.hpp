@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -43,7 +44,7 @@ public:
      * @brief Generate a C++ file from the configured input
      *
      */
-    void generate() {
+    void encodeSourceToCpp() {
         size_t bytesRead{0}, columns{4};
         const size_t sepWidth{4}, firstColumn{4};
         uint64_t outValue{0};
@@ -83,8 +84,10 @@ public:
     int selftest() {
         using namespace std;
 
-        if constexpr (!is_same_v<decltype(src), ifstream>) src << "File to encode\n";
-        generate();
+        if constexpr (!is_same_v<decltype(src), ifstream>) generateRandomSourceData();
+
+        encodeSourceToCpp();
+
         src.clear();
         src.seekg(0);
         string line;
@@ -126,6 +129,15 @@ private:
         if (bits != 16 and bits != 32 and bits != 64) bits = 8;
         valueType = "uint" + std::to_string(bits) + "_t";
         bytesPerValue = bits >> 3;
+    }
+
+    void generateRandomSourceData() {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(-128, 127);
+
+        size_t inputSize = gen() % 32768;
+        for (auto bytes = 0u; bytes < inputSize; ++bytes) src.put(static_cast<char>(distrib(gen)));
     }
 
     void REQUIRE(bool passed, std::string legend = {}) {

@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
                 outputFile = filesystem::path(inputFile).replace_extension("hpp");
 
             SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
-            code.generate();
+            code.encodeSourceToCpp();
         }
     }
     catch (const exception& e) {
