@@ -1,4 +1,8 @@
-#include "SourceCode.hpp"
+/// @date 2023/03/07 17:27:42
+/// @author Ambroise Leclerc
+/// @brief Command-line utility which converts a binary file to a C++ source code file
+
+ #include "SourceCode.hpp"
 
 #include <cxxopts.hpp>
 
@@ -6,7 +10,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
     try {
-        cxxopts::Options options("bin2cpp", "Convert a binary file into a C++ header");
+        cxxopts::Options options("bin2cpp", "bin2cpp : converts a binary file to a C++ source code file ( https://github.com/ambroise-leclerc/Bin2Cpp )\n");
         options.add_options()("i,input", "input file to convert", cxxopts::value<string>())(
           "o,output", "name of C++ file header to output", cxxopts::value<string>())(
           "c,columns", "max number of columns in the target file", cxxopts::value<size_t>()->default_value("160"))(

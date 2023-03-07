@@ -1,3 +1,7 @@
+/// @date 2023/03/07 17:27:42
+/// @author Ambroise Leclerc
+/// @brief Encodes binary file into C++ source code
+
 #include <array>
 #include <bit>
 #include <filesystem>
