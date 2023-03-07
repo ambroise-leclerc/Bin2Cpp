@@ -36,17 +36,20 @@ int main(int argc, char** argv) {
         }
 
         else if (result.count("input")) {
-            filesystem::path inputFile{result["input"].as<string>()};
-            filesystem::path outputFile{result.count("output") ? result["output"].as<string>()
-                                                               : filesystem::path(inputFile).replace_extension("hpp")};
-            SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
-            code.generate();
-        }
-    }
-    catch (const exception& e) {
-        cerr << "Error : " << e.what() << "\n";
-        return -1;
-    }
+            filesystem::path inputFile{result["input"].as<string>()}, outputFile;
+            if (result.count("output"))
+                outputFile = result["output"].as<string>();
+            else
+                outputFile = filesystem::path(inputFile).replace_extension("hpp");
 
-    return 0;
+        SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
+        code.generate();
+    }
+}
+catch (const exception& e) {
+    cerr << "Error : " << e.what() << "\n";
+    return -1;
+}
+
+return 0;
 }

@@ -1,5 +1,3 @@
-#include <format>
-
 #include <array>
 #include <bit>
 #include <filesystem>
@@ -10,7 +8,7 @@
 #include <vector>
 #include <version>
 
-#ifdef __cpp_lib_format
+#if __has_include(<format>)
 #include <format>
 #else
 #include <fmt/core.h>
@@ -93,7 +91,7 @@ public:
         string line;
         while (getline(dst, line)) {
             if (auto intType = line.find("std::array<uint"); intType != string::npos) {
-                auto bytesCount = stoi(line.substr(intType + 15)) / 8;
+                auto bytesCount = stoui(line.substr(intType + 15)) >> 3;
                 while (getline(dst, line), line != "    };") {
                     size_t startPos = 0, nextPos = 0;
                     while (startPos < line.size()) {
