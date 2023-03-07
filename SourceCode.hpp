@@ -12,7 +12,7 @@
 #include <format>
 #else
 #include <fmt/core.h>
-using fmt::format;
+using namespace fmt;
 #endif
 
 template<typename InputStream, typename OutputStream>
@@ -41,7 +41,7 @@ public:
 
     /**
      * @brief Generate a C++ file from the configured input
-     * 
+     *
      */
     void generate() {
         size_t bytesRead{0}, columns{4};
@@ -78,7 +78,7 @@ public:
 
     /**
      * @brief Launch a serie of tests with the configured options and input of SourceCode.
-     * 
+     *
      * If InputStream is of std::stringstream type, an internal data stream will be used.
      */
     int selftest() {
@@ -100,10 +100,14 @@ public:
 
                         array<uint8_t, 8> data;
                         memcpy(data.data(), &value, bytesCount);
+                        REQUIRE(!src.eof(), "Source file EOF before data");
                         for (size_t index = 0; index < bytesCount; ++index) {
                             auto byte = static_cast<uint8_t>(src.get());
-                            size_t readIndex = endian::native == endian::big ? index : bytesCount - index - 1;
-                            REQUIRE(data[readIndex] == byte, format("data[{}] = {} == {}", readIndex, data[readIndex], byte));
+                            if (!src.eof()) {
+                                size_t readIndex = endian::native == endian::big ? index : bytesCount - index - 1;
+                                REQUIRE(data[readIndex] == byte,
+                                        format("data[{}] = {} == {}", readIndex, data[readIndex], byte));
+                            }
                         }
                     }
                 }
