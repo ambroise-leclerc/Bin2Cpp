@@ -1,6 +1,15 @@
 /// @date 2023/03/07 17:27:42
 /// @author Ambroise Leclerc
 /// @brief Encodes binary file into C++ source code
+///
+/// This file is part of Bin2Cpp.
+/// Bin2Cpp is free software : you can redistribute it and or modify it under the terms of the GNU General Public License as
+/// published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Bin2Cpp
+/// is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+/// You should have received a copy of the GNU General Public License along with Foobar. If not, see
+/// <https://www.gnu.org/licenses/>.
+#pragma once
 
 #include <array>
 #include <bit>
@@ -37,6 +46,7 @@ public:
         : SourceCode(maxColumns, outputBitwidth, output.stem().string()) {
         src.open(input, std::ios::binary);
         dst.open(output);
+        std::cout << "Code generated in file : " << std::filesystem::absolute(output) << "\n";
     }
 
     SourceCode(std::filesystem::path input, size_t maxColumns, size_t outputBitwidth, std::string structName)
@@ -56,7 +66,14 @@ public:
         dst << "#pragma once\n\n";
         dst << "#include <array>\n\n";
         dst << "struct " << structName << " {\n";
-        dst << "    static constexpr std::array<" << valueType << "> data {\n    ";
+
+        auto fileSize = src.tellg();
+        src.seekg(0, std::ios::end);
+        fileSize = src.tellg() - fileSize;
+        src.clear();
+        src.seekg(0);
+        dst << "    static constexpr size_t data_size{ " << fileSize << " };\n";
+        dst << "    static constexpr std::array<" << valueType << ", " << 1 + fileSize / bytesPerValue << "> data {\n    ";
         dst << std::hex << std::setfill('0');
         while (src) {
             auto byte = static_cast<uint8_t>(src.get());
@@ -77,7 +94,7 @@ public:
         }
         auto paddingBits = ((bytesPerValue - (bytesRead % bytesPerValue)) % bytesPerValue) * 8;
         if (paddingBits > 0) dst << ", 0x" << std::setw(bytesPerValue * 2) << (outValue << paddingBits);
-        dst << "\n    };\n    constexpr size_t data_size{" << std::dec << bytesRead << "};\n";
+        dst << "\n    };\n};";
     }
 
     /**

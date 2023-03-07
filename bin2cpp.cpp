@@ -1,8 +1,14 @@
 /// @date 2023/03/07 17:27:42
 /// @author Ambroise Leclerc
 /// @brief Command-line utility which converts a binary file to a C++ source code file
-
- #include "SourceCode.hpp"
+/// 
+/// This file is part of Bin2Cpp.
+/// Bin2Cpp is free software : you can redistribute it and or modify it under the terms of the GNU General Public License as published
+/// by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+/// Bin2Cpp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+/// You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+#include "SourceCode.hpp"
 
 #include <cxxopts.hpp>
 
@@ -44,7 +50,7 @@ int main(int argc, char** argv) {
             if (result.count("output"))
                 outputFile = result["output"].as<string>();
             else
-                outputFile = filesystem::path(inputFile).replace_extension("hpp");
+                outputFile = filesystem::path(inputFile.filename()).replace_extension("hpp");
 
             SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
             code.encodeSourceToCpp();
