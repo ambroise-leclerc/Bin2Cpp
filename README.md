@@ -32,6 +32,7 @@ $ bin2cpp favicon.ico -c 128 -b 64
   Code generated in file : "/home/leclerc/devel/Bin2Cpp/build/favicon.hpp"
 ```
 
+A favicon.hpp file is generated : 
 ```cpp
 #pragma once
 
@@ -57,8 +58,8 @@ struct favicon {
      0x0000000000000000, 0x0000000000000002, 0x1000001310000005, 0x0000002418000008, 0x9000004890000040, 0x500000905f800000,
      0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000800000008000, 0x0001e00000070000
     };
-};```
-
+};
+```
 
 
 
