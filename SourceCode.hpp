@@ -91,7 +91,7 @@ public:
         string line;
         while (getline(dst, line)) {
             if (auto intType = line.find("std::array<uint"); intType != string::npos) {
-                auto bytesCount = stoui(line.substr(intType + 15)) >> 3;
+                auto bytesCount = stoul(line.substr(intType + 15)) >> 3;
                 while (getline(dst, line), line != "    };") {
                     size_t startPos = 0, nextPos = 0;
                     while (startPos < line.size()) {
