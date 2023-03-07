@@ -9,6 +9,13 @@ target_compile_options(project_options INTERFACE
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
 )
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(HAS_STD_FORMAT True)
+else()
+  set(HAS_STD_FORMAT False)
+endif()
+message("Has std::format : ${HAS_STD_FORMAT}")
+
 
 set(CPM_DOWNLOAD_VERSION 0.34.3)
 if(CPM_SOURCE_CACHE)
@@ -27,8 +34,14 @@ include(${CPM_DOWNLOAD_LOCATION})
 
 CPMAddPackage("gh:jarro2783/cxxopts@3.1.0")
 
+
 add_executable(bin2cpp bin2cpp.cpp)
 target_link_libraries(bin2cpp PRIVATE project_options cxxopts::cxxopts)
+
+if (NOT ${HAS_STD_FORMAT})
+  CPMAddPackage("gh:fmtlib/fmt#7.1.3")
+  target_link_libraries(bin2cpp PRIVATE fmt)
+endif()
 
 include(CTest)
 add_test(NAME FromSourceCodeHppFile_8bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 8) 

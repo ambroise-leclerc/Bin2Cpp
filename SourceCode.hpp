@@ -1,12 +1,21 @@
+#include <format>
+
 #include <array>
 #include <bit>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <version>
+
+#ifdef __cpp_lib_format
+#include <format>
+#else
+#include <fmt/core.h>
+using fmt::format;
+#endif
 
 template<typename InputStream, typename OutputStream>
 class SourceCode {
