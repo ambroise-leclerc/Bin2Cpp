@@ -39,7 +39,7 @@ A favicon.hpp file is generated :
 #include <array>
 
 struct favicon {
-    constexpr size_t data_size{ 766 };
+    static constexpr size_t data_size{ 766 };
     static constexpr std::array<uint64_t, 96> data {
      0x0000010001002020, 0x100001000400e802, 0x0000160000002800, 0x0000200000004000, 0x0000010004000000, 0x0000000000000000,
      0x0000000000001000, 0x0000000000003834, 0x3200e09b1200ead9, 0xb0006c676200ae9f, 0x7500e6b24200524e, 0x4800e1a429009d7b,
