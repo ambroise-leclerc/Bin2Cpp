@@ -35,6 +35,12 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_link_libraries(bin2cpp PRIVATE fmt)
 endif()
 
+
+if(ENABLE_TEST_COVERAGE)
+  target_compile_options(bin2cpp PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
+  target_link_options(bin2cpp PUBLIC -fprofile-arcs -ftest-coverage)
+endif()
+
 include(CTest)
 add_test(NAME FromSourceCodeHppFile_8bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 8) 
 add_test(NAME FromSourceCodeHppFile_16bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 16) 
