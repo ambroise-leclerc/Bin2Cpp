@@ -25,10 +25,8 @@ int main(int argc, char** argv) {
         options.add_options()("i,input", "input file to convert", cxxopts::value<string>())(
           "o,output", "name of C++ file header to output", cxxopts::value<string>())(
           "c,columns", "max number of columns in the target file", cxxopts::value<size_t>()->default_value("160"))(
-          "b,bitWidth", "output type size : 8, 16, 32, 64 (i.e. uint8_t, uint16_t, uint32_t, uint64_t)",
-          cxxopts::value<size_t>()->default_value("8"))(
-          "withDecoder",
-          "add a filestream-like interface with endian-aware read() and get() functions for multi-bytes outputs")(
+          "b,bitWidth", "output type size : 8, 16, 32, 64 (i.e. uint8_t, uint16_t, uint32_t, uint64_t)", cxxopts::value<size_t>()->default_value("8"))(
+          "withDecoder", "add a filestream-like interface with endian-aware read() and get() functions for multi-bytes outputs")(
           "s,selftest", "launch automated tests")("h,help", "Print usage");
         options.parse_positional({"input"});
         options.positional_help("inputFileName");
@@ -59,10 +57,6 @@ int main(int argc, char** argv) {
             }
             else {
                 SourceCode<stringstream, stringstream> code{columns, bitWidth, "Test"};
-                if (bitWidth == 8)
-                    throw invalid_argument("no decoder can be generated for 8 bit width output");
-                else
-                    code.setOptionalDecoder();
                 testDecoderOption(code);
                 return code.selftest();
             }
