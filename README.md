@@ -22,6 +22,8 @@ Usage:
                       160)
   -b, --bitWidth arg  output type size : 8, 16, 32, 64 (i.e. uint8_t,
                       uint16_t, uint32_t, uint64_t) (default: 8)
+      --withDecoder   add a filestream-like interface with endian-aware
+                      read() and get() functions for multi-bytes outputs
   -s, --selftest      launch automated tests
   -h, --help          Print usage
 ```
