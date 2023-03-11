@@ -41,14 +41,29 @@ int main(int argc, char** argv) {
         auto columns = result["columns"].as<size_t>();
         auto bitWidth = result["bitWidth"].as<size_t>();
 
+        auto testDecoderOption = [&result, bitWidth](auto& code) {
+            if (result.count("withDecoder")) {
+                if (bitWidth == 8)
+                    throw invalid_argument("no decoder can be generated for 8 bit width output");
+                else
+                    code.setOptionalDecoder();
+            }
+        };
+
         if (result.count("selftest")) {
             if (result.count("input")) {
                 filesystem::path inputFile{result["input"].as<string>()};
                 SourceCode<ifstream, stringstream> code{inputFile, columns, bitWidth, inputFile.stem().string()};
+                testDecoderOption(code);
                 return code.selftest();
             }
             else {
                 SourceCode<stringstream, stringstream> code{columns, bitWidth, "Test"};
+                if (bitWidth == 8)
+                    throw invalid_argument("no decoder can be generated for 8 bit width output");
+                else
+                    code.setOptionalDecoder();
+                testDecoderOption(code);
                 return code.selftest();
             }
         }
@@ -61,12 +76,7 @@ int main(int argc, char** argv) {
                 outputFile = filesystem::path(inputFile.filename()).replace_extension("hpp");
 
             SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
-            if (result.count("withDecoder")) {
-                if (bitWidth == 8)
-                    throw invalid_argument("no decoder can be generated for 8 bit width output");
-                else
-                    code.setOptionalDecoder();
-            }
+            testDecoderOption(code);
             code.encodeSourceToCpp();
         }
     }
