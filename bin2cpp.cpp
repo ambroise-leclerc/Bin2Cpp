@@ -12,16 +12,21 @@
 
 #include <cxxopts.hpp>
 
+#include <stdexcept>
+
 using namespace std;
 
 int main(int argc, char** argv) {
     try {
         cxxopts::Options options("bin2cpp", "bin2cpp : converts a binary file to a C++ source code file ( https://github.com/ambroise-leclerc/Bin2Cpp )\n");
-        options.add_options()("i,input", "input file to convert", cxxopts::value<string>())(
-          "o,output", "name of C++ file header to output", cxxopts::value<string>())(
-          "c,columns", "max number of columns in the target file", cxxopts::value<size_t>()->default_value("160"))(
-          "b,bitWidth", "output type size : 8, 16, 32, 64 (i.e. uint8_t, uint16_t, uint32_t, uint64_t)",
-          cxxopts::value<size_t>()->default_value("8"))("s,selftest", "launch automated tests")("h,help", "Print usage");
+        options.add_options()(
+            "i,input", "input file to convert", cxxopts::value<string>())(
+            "o,output", "name of C++ file header to output", cxxopts::value<string>())(
+            "c,columns", "max number of columns in the target file", cxxopts::value<size_t>()->default_value("160"))(
+            "b,bitWidth", "output type size : 8, 16, 32, 64 (i.e. uint8_t, uint16_t, uint32_t, uint64_t)", cxxopts::value<size_t>()->default_value("8"))(
+            "withDecoder", "add a filestream-like interface with endian-aware read() and get() functions for multi-bytes outputs")(
+            "s,selftest", "launch automated tests")(
+            "h,help", "Print usage");
         options.parse_positional({"input"});
         options.positional_help("inputFileName");
         auto result = options.parse(argc, argv);
@@ -53,6 +58,9 @@ int main(int argc, char** argv) {
                 outputFile = filesystem::path(inputFile.filename()).replace_extension("hpp");
 
             SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
+            if (result.count("withDecoder"))
+                if (bitWidth == 8) throw invalid_argument("no decoder can be generated for 8 bit width output");
+                else code.setOptionalDecoder();
             code.encodeSourceToCpp();
         }
     }

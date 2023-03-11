@@ -12,11 +12,13 @@
 
 #include <array>
 #include <bit>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <string>
 #include <utility>
 
 #if __has_include(<fmt/core.h>)
@@ -33,6 +35,8 @@ class SourceCode {
     InputStream src;
     OutputStream dst;
 
+    bool optionalDecoder{false};
+
 public:
     SourceCode(size_t maxColumns, size_t outputBitwidth, std::string structName)
         : structName(std::move(structName)), maxColumns(maxColumns) {
@@ -43,13 +47,15 @@ public:
         : SourceCode(maxColumns, outputBitwidth, output.stem().string()) {
         src.open(input, std::ios::binary);
         dst.open(output);
-        std::cout << "Code generated in file : " << std::filesystem::absolute(output) << "\n";
+        std::cout << "Code will be generated in file : " << std::filesystem::absolute(output) << "\n";
     }
 
     SourceCode(std::filesystem::path input, size_t maxColumns, size_t outputBitwidth, std::string structName)
         : SourceCode(maxColumns, outputBitwidth, std::move(structName)) {
         src.open(input, std::ios::binary);
     }
+
+    void setOptionalDecoder(bool set = true) { optionalDecoder = set; }
 
     /**
      * @brief Generate a C++ file from the configured input
@@ -61,8 +67,10 @@ public:
         uint64_t outValue{0};
 
         dst << "#pragma once\n\n";
-        dst << "#include <array>\n\n";
-        dst << "struct " << structName << " {\n";
+        dst << "#include <array>\n";
+        if (optionalDecoder)
+            dst << "#include <bit>\n#include <cstring>\n";
+        dst << "\nstruct " << structName << " {\n";
 
         auto fileSize = src.tellg();
         src.seekg(0, std::ios::end);
@@ -91,7 +99,9 @@ public:
         }
         auto paddingBits = ((bytesPerValue - (bytesRead % bytesPerValue)) % bytesPerValue) * 8;
         if (paddingBits > 0) dst << ", 0x" << std::setw(bytesPerValue * 2) << (outValue << paddingBits);
-        dst << "\n    };\n};";
+        dst << "\n    };\n";
+        if (optionalDecoder) dst << generateDecoder(bytesPerValue);
+        dst << "\n};";
     }
 
     /**
@@ -165,4 +175,47 @@ private:
             failedTestsCount++;
         }
     }
+
+    static std::string generateDecoder(size_t bytes) {
+        auto width = std::to_string(bytes);
+        return "\n\
+    struct istream {\n\
+        size_t readIndex, lastReadCount;\n\
+        bool eofBit, badBit;\n\
+\n\
+        size_t tellg() const { return readIndex; }\n\
+        istream& seekg(size_t pos) { readIndex = pos; return *this; }\n\
+        size_t gcount() const { return lastReadCount; }\n\
+        bool eof() const { return eofBit; }\n\
+        bool bad() const { return badBit; }\n\
+        bool fail() const { return false; }\n\
+        void clear() { eofBit = false; badBit = false; }\n\
+        explicit operator bool() const { return !fail(); }\n\
+        bool operator!() const { return eof() || bad(); }\n\
+    };\n\
+\n\
+    static istream& read(char* s, size_t count) { return get(s, count); }\n\
+    static istream& get(char* s, size_t count) {\n\
+        static istream stream{.readIndex = 0};\n\
+        static std::array<char, " + width +"> chunk;\n\
+\n\
+        stream.lastReadCount = 0;\n\
+        if (stream.eof()) return stream;\n\
+        for (size_t index = 0; index < count; ++index) {\n\
+            if (stream.eof()) {\n\
+                stream.badBit = true;\n\
+                stream.lastReadCount = index;\n\
+                return stream;\n\
+            }\n\
+            if (stream.readIndex % " + width + " == 0) memcpy(chunk.data(), &data[stream.readIndex / " + width + "], " + width + ");\n\
+            size_t readIndex = std::endian::native == std::endian::big ? stream.readIndex % " + width + " : " + width + " - 1 - (stream.readIndex % " + width + ");\n\
+            s[index] = chunk[readIndex];\n\
+            \n\
+            stream.readIndex++;\n\
+            if (stream.readIndex == data_size) stream.eofBit = true;\n\
+        }\n\
+        stream.lastReadCount = count;\n\
+        return stream;\n\
+    }";
+}
 };
