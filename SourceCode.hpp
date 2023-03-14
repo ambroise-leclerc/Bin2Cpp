@@ -70,7 +70,10 @@ public:
         dst << "#include <array>\n";
         if (optionalDecoder)
             dst << "#include <bit>\n#include <cstring>\n";
-        dst << "\nstruct " << structName << " {\n";
+
+        if (optionalDecoder) dst << generateDecoder(bytesPerValue);
+        
+        dst << "\nstruct " << structName << optionalDecoder ? " : Streamer<structName> {\n":" {\n";
 
         auto fileSize = src.tellg();
         src.seekg(0, std::ios::end);
@@ -100,7 +103,6 @@ public:
         auto paddingBits = ((bytesPerValue - (bytesRead % bytesPerValue)) % bytesPerValue) * 8;
         if (paddingBits > 0) dst << ", 0x" << std::setw(bytesPerValue * 2) << (outValue << paddingBits);
         dst << "\n    };\n";
-        if (optionalDecoder) dst << generateDecoder(bytesPerValue);
         dst << "\n};";
     }
 
@@ -178,44 +180,53 @@ private:
 
     static std::string generateDecoder(size_t bytes) {
         auto width = std::to_string(bytes);
-        return "\n\
-    struct istream {\n\
-        size_t readIndex, lastReadCount;\n\
-        bool eofBit, badBit;\n\
-\n\
-        size_t tellg() const { return readIndex; }\n\
-        istream& seekg(size_t pos) { readIndex = pos; return *this; }\n\
-        size_t gcount() const { return lastReadCount; }\n\
-        bool eof() const { return eofBit; }\n\
-        bool bad() const { return badBit; }\n\
-        bool fail() const { return false; }\n\
-        void clear() { eofBit = false; badBit = false; }\n\
-        explicit operator bool() const { return !fail(); }\n\
-        bool operator!() const { return eof() || bad(); }\n\
-    };\n\
-\n\
-    static istream& read(char* s, size_t count) { return get(s, count); }\n\
-    static istream& get(char* s, size_t count) {\n\
-        static istream stream{.readIndex = 0};\n\
-        static std::array<char, " + width +"> chunk;\n\
-\n\
-        stream.lastReadCount = 0;\n\
-        if (stream.eof()) return stream;\n\
-        for (size_t index = 0; index < count; ++index) {\n\
-            if (stream.eof()) {\n\
-                stream.badBit = true;\n\
-                stream.lastReadCount = index;\n\
-                return stream;\n\
-            }\n\
-            if (stream.readIndex % " + width + " == 0) memcpy(chunk.data(), &data[stream.readIndex / " + width + "], " + width + ");\n\
-            size_t readIndex = std::endian::native == std::endian::big ? stream.readIndex % " + width + " : " + width + " - 1 - (stream.readIndex % " + width + ");\n\
-            s[index] = chunk[readIndex];\n\
-            \n\
-            stream.readIndex++;\n\
-            if (stream.readIndex == data_size) stream.eofBit = true;\n\
-        }\n\
-        stream.lastReadCount = count;\n\
-        return stream;\n\
-    }";
-}
+        return "\n"
+               "namespace {\n"
+               "template<typename Data>\n"
+               "class Streamer {\n"
+               "public:\n"
+               "    struct istream {\n"
+               "        size_t readIndex, lastReadCount;\n"
+               "        bool eofBit, badBit;\n"
+               "\n"
+               "        size_t tellg() const { return readIndex; }\n"
+               "        istream& seekg(size_t pos) { readIndex = pos; return *this; }\n"
+               "        size_t gcount() const { return lastReadCount; }\n"
+               "        bool eof() const { return eofBit; }\n"
+               "        bool bad() const { return badBit; }\n"
+               "        bool fail() const { return false; }\n"
+               "        void clear() { eofBit = false; badBit = false; }\n"
+               "        explicit operator bool() const { return !fail(); }\n"
+               "        bool operator!() const { return eof() || bad(); }\n"
+               "    };\n"
+               "\n"
+               "    static istream& read(char* s, size_t count) { return get(s, count); }\n"
+               "    static istream& get(char* s, size_t count) {\n"
+               "        static istream stream{.readIndex = 0};\n"
+               "        constexpr auto bytesPerInt = sizeof(typename decltype(Data::data)::size_type);\n"
+               "        static std::array<char, bytesPerInt> chunk;\n"
+               "\n"
+               "        stream.lastReadCount = 0;\n"
+               "        if (stream.eof()) return stream;\n"
+               "        for (size_t index = 0; index < count; ++index) {\n"
+               "            if (stream.eof()) {\n"
+               "                stream.badBit = true;\n"
+               "                stream.lastReadCount = index;\n"
+               "                return stream;\n"
+               "            }\n"
+               "            if (stream.readIndex % bytesPerInt == 0) memcpy(chunk.data(), &Data::data[stream.readIndex / "
+               "bytesPerInt], bytesPerInt);\n"
+               "            size_t readIndex = std::endian::native == std::endian::big ? stream.readIndex % bytesPerInt : "
+               "bytesPerInt - 1 - (stream.readIndex % bytesPerInt);\n"
+               "            s[index] = chunk[readIndex];\n"
+               "            \n"
+               "            stream.readIndex++;\n"
+               "            if (stream.readIndex == data_size) stream.eofBit = true;\n"
+               "        }\n"
+               "        stream.lastReadCount = count;\n"
+               "        return stream;\n"
+               "    }\n"
+               "};\n"
+               "} // namespace\n\n";
+    }
 };
