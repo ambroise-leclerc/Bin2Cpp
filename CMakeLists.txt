@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.20)
 
 project("bin2cpp")
 set(BIN2CPP_VERSION 0.1.0)
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 add_library(project_options INTERFACE)
 target_compile_features(project_options INTERFACE cxx_std_23)
 target_compile_options(project_options INTERFACE
