@@ -34,9 +34,9 @@ enum class DataFormat { raw, gzip, brotli };
 DataFormat detectFormat(std::filesystem::path input) {
     // Detection from extension
     DataFormat dataFormat{DataFormat::raw};
-    if (input.extension() == "gz")
+    if (input.extension() == ".gz")
         dataFormat = DataFormat::gzip;
-    else if (input.extension() == "br")
+    else if (input.extension() == ".br")
         dataFormat = DataFormat::brotli;
 
     // Verification
@@ -184,7 +184,7 @@ private:
     int testsCount{0}, failedTestsCount{0};
 
 private:
-    constexpr std::string getEncodingString(DataFormat format) {
+    constexpr std::string_view getEncodingString(DataFormat format) {
         switch (format) {
             case DataFormat::raw: return {};
             case DataFormat::gzip: return "    static constexpr std::string_view encoding {\"gzip\"};\n";
