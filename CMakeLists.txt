@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 
-project("bin2cpp")
-set(BIN2CPP_VERSION 0.1.0)
+project("bin2cpp" VERSION 0.1.1 LANGUAGES CXX)
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -15,6 +14,8 @@ target_compile_options(project_options INTERFACE
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
 )
 
+
+# CPM package manager installation
 set(CPM_DOWNLOAD_VERSION 0.34.3)
 if(CPM_SOURCE_CACHE)
   get_filename_component(CPM_SOURCE_CACHE ${CPM_SOURCE_CACHE} ABSOLUTE)
@@ -30,22 +31,28 @@ if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
 endif()
 include(${CPM_DOWNLOAD_LOCATION})
 
+
+
+add_executable(bin2cpp)
+target_sources(bin2cpp PRIVATE bin2cpp.cpp SourceCode.hpp)
 CPMAddPackage("gh:jarro2783/cxxopts@3.1.0")
-
-
-add_executable(bin2cpp bin2cpp.cpp)
-target_link_libraries(bin2cpp PRIVATE project_options cxxopts::cxxopts)
-
 if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   CPMAddPackage("gh:fmtlib/fmt#7.1.3")
   target_link_libraries(bin2cpp PRIVATE fmt)
 endif()
 
+target_link_libraries(bin2cpp PRIVATE project_options cxxopts::cxxopts)
 
 if(ENABLE_TEST_COVERAGE)
   target_compile_options(bin2cpp PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
   target_link_options(bin2cpp PUBLIC -fprofile-arcs -ftest-coverage)
 endif()
+
+install(TARGETS bin2cpp)
+
+set(CPACK_PACKAGE_CONTACT "Ambroise Leclerc")
+set(CPACK_GENERATOR "ZIP;DEB")
+include(CPack)
 
 include(CTest)
 add_test(NAME FromSourceCodeHppFile_8bits COMMAND  $<TARGET_FILE:bin2cpp> ${CMAKE_CURRENT_SOURCE_DIR}/SourceCode.hpp -s -b 8) 
