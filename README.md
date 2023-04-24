@@ -31,16 +31,16 @@ Usage:
 Example : conversion of an icon file to a C++ header with 128 columns and data contained in a uint64_t array :
 ```bash
 $ bin2cpp favicon.ico -c 128 -b 64
-  Code generated in file : "/home/leclerc/devel/Bin2Cpp/build/favicon.hpp"
+  Code generated in file : "/home/leclerc/devel/Bin2Cpp/build/favicon.ico.hpp"
 ```
 
-A favicon.hpp file is generated : 
+A favicon.ico.hpp file is generated : 
 ```cpp
 #pragma once
 
 #include <array>
 
-struct favicon {
+struct FaviconIco {
     static constexpr size_t data_size{ 766 };
     static constexpr std::array<uint64_t, 96> data {
      0x0000010001002020, 0x100001000400e802, 0x0000160000002800, 0x0000200000004000, 0x0000010004000000, 0x0000000000000000,
@@ -63,10 +63,46 @@ struct favicon {
 };
 ```
 
+Example : conversion with a compressed file
+```bash
+$ bin2cpp favicon.ico.gz -c 128 -b 64
+  Code generated in file : "/home/leclerc/devel/Bin2Cpp/build/favicon.ico.gz.hpp"
+```
+
+A favicon.ico.gz.hpp file is generated with an "encoding" field describing the compression format ("gzip" or "br"): 
+```cpp
+#pragma once
+
+#include <array>
+
+struct FaviconIcoGz {
+    static constexpr std::string_view encoding {"gzip"};
+    static constexpr size_t data_size{ 522 };
+    static constexpr std::array<uint64_t, 66> data {
+     0x1f8b0808a6fd4664, 0x000366617669636f, 0x6e2e69636f008d52, 0x4f68d36014ffb56a, 0xdc4171afa211c25c, 0xea1f500a0a8d94b1,
+     0x4b863a191e448550, 0x9c07831ddf3cac84, 0x08358740e9657af1, 0xb0ab1451705e7670, 0xae225a03b57af2a8, 0x9789b7f5301ddbc1,
+     0x8e40103cc497a4ce, 0xced37e5f7e79eff7, 0xbeefbdef7df902a4, 0x78a8ea20bf77632d, 0x0d1c06708aa932c7, 0x9851fc7f0cf6ecc8,
+     0xb93c56ea19ac7f7b, 0x8999e9db78f1a482, 0xef8df3b87e65029d, 0xf9d378ec9ec5fb77, 0x4dcc562dfcfef513, 0x6f1fa8b85f1ec1da,
+     0xc7324a372ec13bde, 0x5f35ef35b76f5357, 0xb7ebf4d3d8941f7e, 0x5a8e9d5d2660e20b, 0xd9360d6d2d9a911d, 0x86fdb745899c04dd,
+     0x446ff6a4339c68d9, 0xb11951462c5332c9, 0x3d4415cc4db22986, 0x4dc3bc173ed03f70, 0x71b0c9c8adaaf283, 0x1d9edecf66a3ea91,
+     0x9265e733a4481f73, 0x73d73291ae99d847, 0x74e8f5c6ddacd238, 0x49d4867487d3b38d, 0xa34bca99d5685e1a, 0x207257df504be9f0,
+     0xfab62995b91ce7e6, 0xe2facba66411b5dc, 0x0eb9373d6f89baa6, 0x24fada21c1fa6bd2, 0x3b7f1267489807c4, 0x341f8c87c3c7bc27,
+     0x4c214ace160aa22b, 0x85c16cb1e8448f33, 0x69594204e168d130, 0x2a15c33016c3a02b, 0x425d7fcebe513426, 0xfd422108425fd3c6,
+     0xa3c0baa669256bd1, 0x67adcd8f5fbc3caa, 0x697a30f5caf2b567, 0x0b3138e0e71b170a, 0xbad6831e2ee4bce6, 0xa33ed4bd36df612d,
+     0xfac5768a345fca41, 0xe61ef64f1c0106e6, 0x8009e6d85560ee56, 0x6d27256a09532bc0, 0xde3f23cd980cfe02, 0x0000000000000000
+    };
+};
+```
+
 
 ## Compilation
 ```bash
 $ mkdir build && cd build
 $ cmake ..
-$ cmake --build . --configuration Release
+$ cmake --build . --config Release
+```
+
+## Test
+```bash
+$ ctest -C Release
 ```
