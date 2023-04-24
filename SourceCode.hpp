@@ -57,11 +57,11 @@ DataFormat detectFormat(std::filesystem::path input) {
     return dataFormat;
 }
 
-template<typename InputStream, typename OutputStream>
+template<typename OutputStream>
 class SourceCode {
     std::string structName, valueType;
     size_t maxColumns, bytesPerValue;
-    InputStream src;
+    std::ifstream src;
     OutputStream dst;
 
     bool optionalDecoder{false};
@@ -69,13 +69,9 @@ class SourceCode {
     DataFormat dataFormat{DataFormat::raw};
 
 public:
-    SourceCode(size_t maxColumns, size_t outputBitwidth, std::string structName)
+    SourceCode(std::filesystem::path input, size_t maxColumns, size_t outputBitwidth, std::string structName)
         : structName(std::move(structName)), maxColumns(maxColumns) {
         setOutputBitwidth(outputBitwidth);
-    }
-
-    SourceCode(std::filesystem::path input, size_t maxColumns, size_t outputBitwidth, std::string structName)
-        : SourceCode(maxColumns, outputBitwidth, structName) {
         dataFormat = detectFormat(input);
         src.open(input, std::ios::binary);
     }
@@ -138,13 +134,11 @@ public:
     /**
      * @brief Launch a serie of tests with the configured options and input of SourceCode.
      *
-     * If InputStream is of std::stringstream type, an internal data stream will be used.
      */
-    int selftest() {
+    int selftest(DataFormat expectedFormat) {
         using namespace std;
 
-        if constexpr (!is_same_v<decltype(src), ifstream>) generateRandomSourceData();
-
+        REQUIRE(expectedFormat == dataFormat, format("ExpectedFormat {} different from detected format {}", static_cast<int>(expectedFormat), static_cast<int>(dataFormat)));
         encodeSourceToCpp();
 
         src.clear();
@@ -197,15 +191,6 @@ private:
         if (bits != 16 and bits != 32 and bits != 64) bits = 8;
         valueType = "uint" + std::to_string(bits) + "_t";
         bytesPerValue = bits >> 3;
-    }
-
-    void generateRandomSourceData() {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(-128, 127);
-
-        size_t inputSize = gen() % 32768;
-        for (auto bytes = 0u; bytes < inputSize; ++bytes) src.put(static_cast<char>(distrib(gen)));
     }
 
     void REQUIRE(bool passed, std::string legend = {}) {
