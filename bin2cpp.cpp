@@ -48,31 +48,49 @@ int main(int argc, char** argv) {
             }
         };
 
+        auto createInputFile = [](filesystem::path fileName) {
+            DataFormat returnFormat{DataFormat::raw};
+            
+            ofstream inputFile(fileName, ios::binary);
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<> distrib(-128, 127);
+            size_t inputSize = gen() % 32768;
+
+            if (fileName.extension() == ".br") returnFormat = DataFormat::brotli;
+            if (fileName.extension() == ".gz" && fileName.stem() != "erroneous") {
+                 inputFile.put(static_cast<char>(0x1f));   // GZip preamble
+                 inputFile.put(static_cast<char>(0x8b));
+                 inputSize -= 2;
+                 returnFormat = DataFormat::gzip;
+            }
+
+            for (auto bytes = 0u; bytes < inputSize; ++bytes) inputFile.put(static_cast<char>(distrib(gen)));
+            inputFile.close();
+
+            return returnFormat;
+        };
+
+        if (result.count("input") == 0) throw invalid_argument("Input filename is mandatory");
+
         if (result.count("selftest")) {
-            if (result.count("input")) {
-                filesystem::path inputFile{result["input"].as<string>()};
-                SourceCode<ifstream, stringstream> code{inputFile, columns, bitWidth, inputFile.stem().string()};
-                testDecoderOption(code);
-                return code.selftest();
-            }
-            else {
-                SourceCode<stringstream, stringstream> code{columns, bitWidth, "Test"};
-                testDecoderOption(code);
-                return code.selftest();
-            }
-        }
-
-        else if (result.count("input")) {
-            filesystem::path inputFile{result["input"].as<string>()}, outputFile;
-            if (result.count("output"))
-                outputFile = result["output"].as<string>();
-            else
-                outputFile = filesystem::path(inputFile.filename()).replace_extension("hpp");
-
-            SourceCode<ifstream, ofstream> code{inputFile, outputFile, columns, bitWidth};
+            filesystem::path inputFile{result["input"].as<string>()};
+            auto expectedFormat = createInputFile(inputFile);
+            SourceCode<stringstream> code{inputFile, columns, bitWidth, inputFile.stem().string()};
             testDecoderOption(code);
-            code.encodeSourceToCpp();
+
+            return code.selftest(expectedFormat);
         }
+
+        filesystem::path inputFile{result["input"].as<string>()}, outputFile;
+        if (result.count("output"))
+            outputFile = result["output"].as<string>();
+        else
+            outputFile = filesystem::path(inputFile.filename()).replace_extension("hpp");
+
+        SourceCode<ofstream> code{inputFile, outputFile, columns, bitWidth};
+        testDecoderOption(code);
+        code.encodeSourceToCpp();
     }
     catch (const exception& e) {
         cerr << "Error : " << e.what() << "\n";
