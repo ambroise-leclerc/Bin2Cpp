@@ -104,7 +104,7 @@ public:
         src.clear();
         src.seekg(0);
         dst << getEncodingString(dataFormat);
-        dst << "    static constexpr size_t data_size{ " << fileSize << " };\n";
+        dst << "    static constexpr size_t dataSize{ " << fileSize << " };\n";
         dst << "    static constexpr std::array<" << valueType << ", " << 1 + fileSize / bytesPerValue << "> data {\n    ";
         dst << std::hex << std::setfill('0');
         while (src) {

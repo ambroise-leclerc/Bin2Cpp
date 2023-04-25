@@ -41,7 +41,7 @@ A favicon.ico.hpp file is generated :
 #include <array>
 
 struct FaviconIco {
-    static constexpr size_t data_size{ 766 };
+    static constexpr size_t dataSize{ 766 };
     static constexpr std::array<uint64_t, 96> data {
      0x0000010001002020, 0x100001000400e802, 0x0000160000002800, 0x0000200000004000, 0x0000010004000000, 0x0000000000000000,
      0x0000000000001000, 0x0000000000003834, 0x3200e09b1200ead9, 0xb0006c676200ae9f, 0x7500e6b24200524e, 0x4800e1a429009d7b,
@@ -77,7 +77,7 @@ A favicon.ico.gz.hpp file is generated with an "encoding" field describing the c
 
 struct FaviconIcoGz {
     static constexpr std::string_view encoding {"gzip"};
-    static constexpr size_t data_size{ 522 };
+    static constexpr size_t dataSize{ 522 };
     static constexpr std::array<uint64_t, 66> data {
      0x1f8b0808a6fd4664, 0x000366617669636f, 0x6e2e69636f008d52, 0x4f68d36014ffb56a, 0xdc4171afa211c25c, 0xea1f500a0a8d94b1,
      0x4b863a191e448550, 0x9c07831ddf3cac84, 0x08358740e9657af1, 0xb0ab1451705e7670, 0xae225a03b57af2a8, 0x9789b7f5301ddbc1,
