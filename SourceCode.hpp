@@ -82,6 +82,13 @@ public:
         std::clog << "Code will be generated in file : " << std::filesystem::absolute(output) << "\n";
     }
 
+    SourceCode() = delete;
+    SourceCode(const SourceCode&) = delete;
+    SourceCode& operator=(const SourceCode&) = delete;
+    SourceCode(SourceCode&&) = delete;
+    SourceCode& operator=(SourceCode&&) = delete;
+    ~SourceCode() = default;
+
     void setOptionalDecoder(bool set = true) { optionalDecoder = set; }
 
     /**
