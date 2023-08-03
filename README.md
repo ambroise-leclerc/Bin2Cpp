@@ -8,6 +8,7 @@ A command-line utility for converting a binary file to a C++ source code file.
 [![Ubuntu/Clang](https://github.com/ambroise-leclerc/Bin2Cpp/actions/workflows/BuildLinuxClang.yml/badge.svg)](https://github.com/ambroise-leclerc/Bin2Cpp/actions/workflows/BuildLinuxClang.yml)
 [![Build MacOS](https://github.com/ambroise-leclerc/Bin2Cpp/actions/workflows/BuildMacOS.yml/badge.svg)](https://github.com/ambroise-leclerc/Bin2Cpp/actions/workflows/BuildMacOS.yml)
 [![codecov](https://codecov.io/github/ambroise-leclerc/Bin2Cpp/branch/main/graph/badge.svg?token=VMCG69MS5A)](https://codecov.io/github/ambroise-leclerc/Bin2Cpp)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=ambroise-leclerc_Bin2Cpp&metric=alert_status)](https://sonarcloud.io/dashboard?id=ambroise-leclerc_Bin2Cpp)
 
 ## Getting started
 ```bash
