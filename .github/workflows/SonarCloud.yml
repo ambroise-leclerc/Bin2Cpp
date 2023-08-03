@@ -5,8 +5,10 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-  env:
-    BUILD_TYPE: Release
+
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build:
     name: Build and analyze
