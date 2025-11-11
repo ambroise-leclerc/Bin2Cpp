@@ -30,7 +30,7 @@ using fmt::format;
 #include <format>
 #endif
 
-enum class DataFormat { raw, gzip, brotli };
+enum class DataFormat { raw, gzip, brotli, spirv };
 DataFormat detectFormat(std::filesystem::path input) {
     // Detection from extension
     DataFormat dataFormat{DataFormat::raw};
@@ -38,6 +38,8 @@ DataFormat detectFormat(std::filesystem::path input) {
         dataFormat = DataFormat::gzip;
     else if (input.extension() == ".br")
         dataFormat = DataFormat::brotli;
+    else if (input.extension() == ".spv")
+        dataFormat = DataFormat::spirv;
 
     // Verification
     if (dataFormat == DataFormat::gzip) {
@@ -50,6 +52,24 @@ DataFormat detectFormat(std::filesystem::path input) {
         testFile.close();
         if ((buffer[0] != gzipId1) || (buffer[1] != gzipId2)) {
             std::clog << "File has a gzip extension but not a gzip preamble : type is identified as 'raw'\n";
+            dataFormat = DataFormat::raw;
+        }
+    }
+
+    if (dataFormat == DataFormat::spirv) {
+        std::ifstream testFile;
+        std::array<std::byte, 4> buffer;
+        const uint32_t spirvMagic{0x07230203};
+
+        testFile.open(input, std::ios::binary);
+        testFile.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+        testFile.close();
+
+        uint32_t readMagic;
+        std::memcpy(&readMagic, buffer.data(), sizeof(uint32_t));
+
+        if (readMagic != spirvMagic) {
+            std::clog << "File has a SPIR-V extension but not a SPIR-V magic number : type is identified as 'raw'\n";
             dataFormat = DataFormat::raw;
         }
     }
@@ -190,6 +210,7 @@ private:
             case DataFormat::raw: return {};
             case DataFormat::gzip: return "    static constexpr std::string_view encoding {\"gzip\"};\n";
             case DataFormat::brotli: return "    static constexpr std::string_view encoding {\"br\"};\n";
+            case DataFormat::spirv: return "    static constexpr std::string_view encoding {\"spirv\"};\n";
         }
         return {};
     }

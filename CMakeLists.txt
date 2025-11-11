@@ -74,3 +74,6 @@ add_test(NAME FromRandomData11_8bits COMMAND  $<TARGET_FILE:bin2cpp> rawData.raw
 add_test(NAME FromRandomData12_8bits COMMAND  $<TARGET_FILE:bin2cpp> compressedData.br -s -b 8)
 add_test(NAME FromRandomData13_8bits COMMAND  $<TARGET_FILE:bin2cpp> compressedData.gz -s -b 8)
 add_test(NAME FromRandomData14_8bits COMMAND  $<TARGET_FILE:bin2cpp> erroneous.gz -s -b 8)
+add_test(NAME FromSPIRVShader_32bits COMMAND  $<TARGET_FILE:bin2cpp> shader.spv -s -b 32)
+add_test(NAME FromSPIRVShader_8bits COMMAND  $<TARGET_FILE:bin2cpp> shader.spv -s -b 8)
+add_test(NAME FromErroneousSPIRV_8bits COMMAND  $<TARGET_FILE:bin2cpp> erroneous.spv -s -b 8)

@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
         auto createInputFile = [](filesystem::path fileName) {
             DataFormat returnFormat{DataFormat::raw};
-            
+
             ofstream inputFile(fileName, ios::binary);
             random_device rd;
             mt19937 gen(rd());
@@ -63,6 +63,15 @@ int main(int argc, char** argv) {
                  inputFile.put(static_cast<char>(0x8b));
                  inputSize -= 2;
                  returnFormat = DataFormat::gzip;
+            }
+            if (fileName.extension() == ".spv" && fileName.stem() != "erroneous") {
+                 // SPIR-V magic number: 0x07230203 (little-endian)
+                 inputFile.put(static_cast<char>(0x03));
+                 inputFile.put(static_cast<char>(0x02));
+                 inputFile.put(static_cast<char>(0x23));
+                 inputFile.put(static_cast<char>(0x07));
+                 inputSize -= 4;
+                 returnFormat = DataFormat::spirv;
             }
 
             for (auto bytes = 0u; bytes < inputSize; ++bytes) inputFile.put(static_cast<char>(distrib(gen)));
